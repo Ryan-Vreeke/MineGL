@@ -1,5 +1,6 @@
 import shader from "./shaders/shaders.wgsl"
 import { TriangleMesh } from "./meshes/triangle_mesh"
+import { SquareMesh } from "./meshes/square_mesh"
 
 
 const Init = async () => {
@@ -7,6 +8,7 @@ const Init = async () => {
   const adapter = await navigator.gpu.requestAdapter()
   const device = await adapter!.requestDevice()
   const triangleMesh : TriangleMesh = new TriangleMesh(device)
+  const squareMesh : SquareMesh = new SquareMesh(device)
 
   const context = canvas.getContext("webgpu") as GPUCanvasContext
 
@@ -28,7 +30,7 @@ const Init = async () => {
         code: shader,
       }),
       entryPoint: "vs_main",
-      buffers: [triangleMesh.bufferLayout]
+      buffers: [squareMesh.bufferLayout]
     },
     fragment: {
       module: device.createShaderModule({
@@ -63,8 +65,8 @@ const Init = async () => {
 
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor)
     passEncoder.setPipeline(pipeline)
-    passEncoder.setVertexBuffer(0, triangleMesh.buffer)
-    passEncoder.draw(3)
+    passEncoder.setVertexBuffer(0, squareMesh.buffer)
+    passEncoder.draw(6)
     passEncoder.end()
 
     device.queue.submit([commandEncoder.finish()])
