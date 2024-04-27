@@ -1,6 +1,8 @@
 import shader from "./shaders/shaders.wgsl"
 import { SquareMesh } from "./meshes/square_mesh"
 import { mat4 } from "gl-matrix"
+import { Block } from "../model/Block"
+import { Camera } from "../model/Camera"
 
 export class Renderer {
   canvas: HTMLCanvasElement
@@ -10,26 +12,30 @@ export class Renderer {
   context!: GPUCanvasContext
   format!: GPUTextureFormat
 
+  //Depth stencil obj
+  depthStencilState!: GPUDepthStencilState
+  depthStencilBuffer!: GPUTexture
+  depthStencilView!: GPUTextureView
+  depthStencilAttachment!: GPURenderPassDepthStencilAttachment
+
   uniformBuffer!: GPUBuffer
   bindGroup!: GPUBindGroup
   pipeline!: GPURenderPipeline
 
   squareMesh!: SquareMesh
-  t: number
+  objectBuffer!: GPUBuffer
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
-    this.t = 0.0
   }
 
   async Initialize() {
     await this.setupDevice()
-
     this.createAssets()
 
-    await this.makePipeline()
+    await this.makeDepthBufferResources()
 
-    this.render()
+    await this.makePipeline()
   }
 
   async setupDevice() {
@@ -45,9 +51,48 @@ export class Renderer {
     })
   }
 
+  async makeDepthBufferResources() {
+    this.depthStencilState = {
+      format: "depth24plus-stencil8",
+      depthWriteEnabled: true,
+      depthCompare: "less-equal",
+    }
+
+    const size: GPUExtent3D = {
+      width: this.canvas.width,
+      height: this.canvas.height,
+      depthOrArrayLayers: 1,
+    }
+    const depthBufferDescriptor: GPUTextureDescriptor = {
+      size: size,
+      format: "depth24plus-stencil8",
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    }
+
+    this.depthStencilBuffer = this.device.createTexture(depthBufferDescriptor)
+
+    const depthTextureViewDescriptor: GPUTextureViewDescriptor = {
+      format: "depth24plus-stencil8",
+      dimension: "2d",
+      aspect: "all",
+    }
+
+    this.depthStencilView = this.depthStencilBuffer.createView(
+      depthTextureViewDescriptor
+    )
+    this.depthStencilAttachment = {
+      view: this.depthStencilView,
+      depthClearValue: 1.0,
+      depthLoadOp: "clear",
+      depthStoreOp: "store",
+      stencilLoadOp: "clear",
+      stencilStoreOp: "discard",
+    }
+  }
+
   async makePipeline() {
     this.uniformBuffer = this.device.createBuffer({
-      size: 64 * 3,
+      size: 64 * 2,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
 
@@ -57,6 +102,14 @@ export class Renderer {
           binding: 0,
           visibility: GPUShaderStage.VERTEX,
           buffer: {},
+        },
+        {
+          binding: 1,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: {
+            type: "read-only-storage",
+            hasDynamicOffset: false,
+          },
         },
       ],
     })
@@ -70,6 +123,12 @@ export class Renderer {
             buffer: this.uniformBuffer,
           },
         },
+        {
+          binding: 1,
+          resource: {
+            buffer: this.objectBuffer,
+          },
+        },
       ],
     })
 
@@ -79,6 +138,7 @@ export class Renderer {
 
     this.pipeline = this.device.createRenderPipeline({
       layout: pipelineLayout,
+      depthStencil: this.depthStencilState,
       vertex: {
         module: this.device.createShaderModule({
           code: shader,
@@ -105,35 +165,28 @@ export class Renderer {
 
   createAssets() {
     this.squareMesh = new SquareMesh(this.device)
-  }
 
-  render = () => {
-    this.t += 0.01
-    if (this.t > 2.0 * Math.PI) {
-      this.t -= 2.0 * Math.PI
+    const modelBufferDescriptor: GPUBufferDescriptor = {
+      size: 64 * 1024,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     }
 
+    this.objectBuffer = this.device.createBuffer(modelBufferDescriptor)
+  }
+
+  async render(blocks: Float32Array, object_count: number, camera: Camera) {
     const projection = mat4.create()
-    const view = mat4.create()
-    const model = mat4.create()
 
-    mat4.perspective(projection, Math.PI / 4, 800 / 600, 0.1, 10)
-    mat4.lookAt(view, [-2, 0, 2], [0, 0, 0], [0, 0, 1])
-    mat4.rotate(model, model, this.t, [0, 0, 1])
+    mat4.perspective(projection, Math.PI / 4, 800 / 600, 0.1, 100)
 
-    this.device.queue.writeBuffer(this.uniformBuffer, 0, <ArrayBuffer>model)
-    this.device.queue.writeBuffer(this.uniformBuffer, 64, <ArrayBuffer>view)
-    this.device.queue.writeBuffer(
-      this.uniformBuffer,
-      128,
-      <ArrayBuffer>projection
-    )
+    this.device.queue.writeBuffer( this.objectBuffer, 0, blocks, 0, blocks.length)
+    this.device.queue.writeBuffer( this.uniformBuffer, 0, <ArrayBuffer>camera.get_model())
+    this.device.queue.writeBuffer( this.uniformBuffer, 64, <ArrayBuffer>projection)
 
     const commandEncoder: GPUCommandEncoder = this.device.createCommandEncoder()
     const textureView: GPUTextureView = this.context
       .getCurrentTexture()
       .createView()
-
     const renderPassDescriptor: GPURenderPassDescriptor = {
       colorAttachments: [
         {
@@ -143,6 +196,7 @@ export class Renderer {
           storeOp: "store",
         },
       ],
+      depthStencilAttachment: this.depthStencilAttachment,
     }
 
     const passEncoder: GPURenderPassEncoder =
@@ -151,10 +205,9 @@ export class Renderer {
     passEncoder.setPipeline(this.pipeline)
     passEncoder.setVertexBuffer(0, this.squareMesh.buffer)
     passEncoder.setBindGroup(0, this.bindGroup)
-    passEncoder.draw(6)
+    passEncoder.draw(36, object_count, 0, 0)
     passEncoder.end()
 
     this.device.queue.submit([commandEncoder.finish()])
-    requestAnimationFrame(this.render)
   }
 }
