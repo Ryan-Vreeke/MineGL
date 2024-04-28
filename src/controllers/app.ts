@@ -14,6 +14,7 @@ export class App {
     this.canvas = canvas
     this.renderer = new Renderer(canvas)
     this.renderer.Initialize()
+
     this.scene = new Scene()
     this.forwardAmount = 0
     this.sideAmount = 0
@@ -32,7 +33,10 @@ export class App {
     var running: boolean = true
 
     this.scene.update()
-    this.scene.player_move(this.sideAmount * this.scale, this.forwardAmount * this.scale)
+    this.scene.player_move(
+      this.sideAmount * this.scale,
+      this.forwardAmount * this.scale
+    )
 
     this.renderer.render(
       this.scene.get_blocks(),

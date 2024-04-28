@@ -6,7 +6,7 @@
     "start": "npm run install-missing && npm run build && npm run serve",
     "install-missing": "npm i",
     "build": "webpack --config webpack.config.js",
-    "serve": "http-server"
+    "serve": "live-server --cors"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +17,7 @@
     "@webgpu/types": "^0.1.40",
     "gl-matrix": "^3.4.3",
     "http-server": "^14.1.1",
+    "live-server": "^1.2.2",
     "ts-loader": "^9.5.1",
     "ts-shader-loader": "^2.0.2",
     "webpack": "^5.91.0",

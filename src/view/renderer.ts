@@ -1,8 +1,8 @@
 import shader from "./shaders/shaders.wgsl"
 import { SquareMesh } from "./meshes/square_mesh"
 import { mat4 } from "gl-matrix"
-import { Block } from "../model/Block"
 import { Camera } from "../model/Camera"
+import { Material } from "../model/material"
 
 export class Renderer {
   canvas: HTMLCanvasElement
@@ -23,6 +23,7 @@ export class Renderer {
   pipeline!: GPURenderPipeline
 
   squareMesh!: SquareMesh
+  material!: Material
   objectBuffer!: GPUBuffer
 
   constructor(canvas: HTMLCanvasElement) {
@@ -31,10 +32,8 @@ export class Renderer {
 
   async Initialize() {
     await this.setupDevice()
-    this.createAssets()
-
+    await this.createAssets()
     await this.makeDepthBufferResources()
-
     await this.makePipeline()
   }
 
@@ -111,6 +110,16 @@ export class Renderer {
             hasDynamicOffset: false,
           },
         },
+        { 
+          binding: 2,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: {}
+        },
+        {
+          binding: 3,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: {}
+        }
       ],
     })
 
@@ -129,6 +138,14 @@ export class Renderer {
             buffer: this.objectBuffer,
           },
         },
+        {
+          binding: 2,
+          resource: this.material.view
+        },
+        {
+          binding: 3,
+          resource: this.material.sampler
+        }
       ],
     })
 
@@ -163,8 +180,13 @@ export class Renderer {
     })
   }
 
-  createAssets() {
+  async createAssets() {
     this.squareMesh = new SquareMesh(this.device)
+    this.material = new Material()
+    await this.material.initialize(
+      this.device,
+      "dist/textures/grass_block_side.png"
+    )
 
     const modelBufferDescriptor: GPUBufferDescriptor = {
       size: 64 * 1024,
@@ -179,9 +201,23 @@ export class Renderer {
 
     mat4.perspective(projection, Math.PI / 4, 800 / 600, 0.1, 100)
 
-    this.device.queue.writeBuffer( this.objectBuffer, 0, blocks, 0, blocks.length)
-    this.device.queue.writeBuffer( this.uniformBuffer, 0, <ArrayBuffer>camera.get_model())
-    this.device.queue.writeBuffer( this.uniformBuffer, 64, <ArrayBuffer>projection)
+    this.device.queue.writeBuffer(
+      this.objectBuffer,
+      0,
+      blocks,
+      0,
+      blocks.length
+    )
+    this.device.queue.writeBuffer(
+      this.uniformBuffer,
+      0,
+      <ArrayBuffer>camera.get_model()
+    )
+    this.device.queue.writeBuffer(
+      this.uniformBuffer,
+      64,
+      <ArrayBuffer>projection
+    )
 
     const commandEncoder: GPUCommandEncoder = this.device.createCommandEncoder()
     const textureView: GPUTextureView = this.context
@@ -191,7 +227,7 @@ export class Renderer {
       colorAttachments: [
         {
           view: textureView,
-          clearValue: [0, 0, 0, 1],
+          clearValue: [0.44, 0.70, 1, 1],
           loadOp: "clear",
           storeOp: "store",
         },
