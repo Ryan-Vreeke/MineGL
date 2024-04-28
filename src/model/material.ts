@@ -26,8 +26,8 @@ export class Material{
     const samplerDescriptor: GPUSamplerDescriptor = {
       addressModeU: "repeat",
       addressModeV: "repeat",
-      magFilter: "linear",
-      minFilter: "nearest",
+      magFilter: "nearest",
+      minFilter: "linear",
       mipmapFilter: "nearest",
       maxAnisotropy: 1
     }

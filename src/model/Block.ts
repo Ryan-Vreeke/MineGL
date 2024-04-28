@@ -14,6 +14,10 @@ export class Block {
     this.model = mat4.create()
     mat4.translate(this.model, this.model, this.position)
     mat4.rotateZ(this.model, this.model, 0)
+
+    // let scaleMat = mat4.create()
+    // mat4.scale(scaleMat, scaleMat, [0.1, 0.1, 0.1])
+    // mat4.multiply(this.model, this.model, scaleMat)
   }
 
   update() {
