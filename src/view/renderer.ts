@@ -25,9 +25,11 @@ export class Renderer {
   squareMesh!: SquareMesh
   material!: Material
   objectBuffer!: GPUBuffer
+  objCount: number
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, objCount: number) {
     this.canvas = canvas
+    this.objCount = objCount
   }
 
   async Initialize() {
@@ -110,16 +112,16 @@ export class Renderer {
             hasDynamicOffset: false,
           },
         },
-        { 
+        {
           binding: 2,
           visibility: GPUShaderStage.FRAGMENT,
-          texture: {}
+          texture: {},
         },
         {
           binding: 3,
           visibility: GPUShaderStage.FRAGMENT,
-          sampler: {}
-        }
+          sampler: {},
+        },
       ],
     })
 
@@ -140,12 +142,12 @@ export class Renderer {
         },
         {
           binding: 2,
-          resource: this.material.view
+          resource: this.material.view,
         },
         {
           binding: 3,
-          resource: this.material.sampler
-        }
+          resource: this.material.sampler,
+        },
       ],
     })
 
@@ -189,7 +191,7 @@ export class Renderer {
     )
 
     const modelBufferDescriptor: GPUBufferDescriptor = {
-      size: 64 * 1024,
+      size: 64 * this.objCount,
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     }
 
@@ -227,7 +229,7 @@ export class Renderer {
       colorAttachments: [
         {
           view: textureView,
-          clearValue: [0.44, 0.70, 1, 1],
+          clearValue: [0.44, 0.7, 1, 1],
           loadOp: "clear",
           storeOp: "store",
         },

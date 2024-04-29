@@ -1,6 +1,5 @@
 import { Renderer } from "../view/renderer"
 import { Scene } from "../model/scene"
-
 export class App {
   canvas: HTMLCanvasElement
   renderer: Renderer
@@ -11,11 +10,14 @@ export class App {
   scale: number
 
   constructor(canvas: HTMLCanvasElement) {
+    const chunkSize: number = 16
+    const chunkCount: number = 16
+
     this.canvas = canvas
-    this.renderer = new Renderer(canvas)
+    this.renderer = new Renderer(canvas, (chunkCount * chunkCount) * (chunkSize * chunkSize))
     this.renderer.Initialize()
 
-    this.scene = new Scene()
+    this.scene = new Scene(chunkCount, chunkSize)
     this.forwardAmount = 0
     this.sideAmount = 0
     this.scale = 0.5

@@ -15,9 +15,9 @@ export class Block {
     mat4.translate(this.model, this.model, this.position)
     mat4.rotateZ(this.model, this.model, 0)
 
-    // let scaleMat = mat4.create()
-    // mat4.scale(scaleMat, scaleMat, [0.1, 0.1, 0.1])
-    // mat4.multiply(this.model, this.model, scaleMat)
+    let scaleMat = mat4.create()
+    mat4.scale(scaleMat, scaleMat, [0.8, 0.8, 0.8])
+    mat4.multiply(this.model, this.model, scaleMat)
   }
 
   update() {
@@ -27,6 +27,10 @@ export class Block {
     this.model = mat4.create()
     mat4.translate(this.model, this.model, this.position)
     mat4.rotateZ(this.model, this.model, Deg2Rad(this.eulers[2]))
+
+    let scaleMat = mat4.create()
+    mat4.scale(scaleMat, scaleMat, [0.8, 0.8, 0.8])
+    mat4.multiply(this.model, this.model, scaleMat)
   }
 
   get_model(): mat4 {

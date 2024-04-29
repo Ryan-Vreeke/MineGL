@@ -8,15 +8,33 @@ export class Scene {
   object_count: number
   player: Camera
 
-  constructor() {
+  chunkSize: number
+  chunkCount: number
+
+  constructor(chunkCount: number, chunkSize: number) {
+    this.chunkCount = chunkCount
+    this.chunkSize = chunkSize
+    const buffSize = chunkSize * chunkSize * (chunkCount * chunkCount)
+
     this.blocks = []
-    this.object_data = new Float32Array(16 * 1024)
+    this.object_data = new Float32Array(16 * buffSize)
     this.object_count = 0
     this.player = new Camera([-20, 0, 5], 0, 0)
 
+    for (var i: number = 0; i < this.chunkCount; i++) {
+      for (var j: number = 0; j < this.chunkCount; j++) {
+        this.createChunk(i, j)
+      }
+    }
+  }
+
+  createChunk(dX: number, dY: number) {
     var i: number = 0
-    for (var x: number = 0; x < 16; x++) {
-      for (var y: number = 0; y < 16; y++) {
+    var startX: number = dX * 16
+    var startY: number = dY * 16
+
+    for (var x: number = startX; x < startX + this.chunkSize; x++) {
+      for (var y: number = startY; y < startY + this.chunkSize; y++) {
         this.createEntry(x, y, i)
         i++
       }
