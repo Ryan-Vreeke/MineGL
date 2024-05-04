@@ -201,7 +201,7 @@ export class Renderer {
   async render(blocks: Float32Array, object_count: number, camera: Camera) {
     const projection = mat4.create()
 
-    mat4.perspective(projection, Math.PI / 4, 800 / 600, 0.1, 100)
+    mat4.perspective(projection, Math.PI / 4, 800 / 600, 0.1, 1000)
 
     this.device.queue.writeBuffer(
       this.objectBuffer,

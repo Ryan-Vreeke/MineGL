@@ -25,7 +25,6 @@ export class Camera {
     ]
 
     vec3.cross(this.right, this.forwards, [0, 0, 1])
-
     vec3.cross(this.up, this.right, this.forwards)
 
     var target: vec3 = vec3.create()
