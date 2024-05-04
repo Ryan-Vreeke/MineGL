@@ -1,6 +1,5 @@
-import { Block } from "./Block"
 import { Camera } from "./Camera"
-import { vec3, mat4 } from "gl-matrix"
+import { vec3 } from "gl-matrix"
 import { MapGen } from "./MapGenerator"
 
 export class Scene {
@@ -17,15 +16,24 @@ export class Scene {
     this.chunkSize = chunkSize
     const buffSize = chunkSize * chunkSize * (chunkCount * chunkCount)
 
-    // this.object_data = new Float32Array(16 * buffSize)
+    this.object_data = new Float32Array(16 * buffSize)
     this.player = new Camera([-20, 0, 5], 0, 0)
-    this.mapGen = new MapGen(chunkSize)
+    this.mapGen = new MapGen(chunkSize, chunkCount)
 
-    // this.mapGen.createChunk(0, 0)
-    this.mapGen.createChunk(1, 0)
+    var z: number = 0;
+    for (var i: number = -1; i < 2; i++) {
+      for (var j: number = -1; j < 2; j++) {
+        const chunk = this.mapGen.createChunk(i,j)
 
-    this.object_data = this.mapGen.update()
-    this.object_count = chunkSize * chunkSize
+        for(var w: number = 0; w < chunk.object_data.length; w++){
+          this.object_data[w + z * chunk.object_data.length] = chunk.object_data[w]
+        }
+        console.log(this.object_data.length)
+      }
+    }
+
+
+    this.object_count = buffSize
   }
 
   update() {
