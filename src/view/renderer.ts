@@ -3,7 +3,6 @@ import { SquareMesh } from "./meshes/square_mesh"
 import { mat4 } from "gl-matrix"
 import { Camera } from "../model/Camera"
 import { Material } from "../model/material"
-
 export class Renderer {
   canvas: HTMLCanvasElement
 
@@ -178,6 +177,7 @@ export class Renderer {
       },
       primitive: {
         topology: "triangle-list",
+        cullMode: "back"
       },
     })
   }
@@ -210,21 +210,11 @@ export class Renderer {
       0,
       blocks.length
     )
-    this.device.queue.writeBuffer(
-      this.uniformBuffer,
-      0,
-      <ArrayBuffer>camera.get_model()
-    )
-    this.device.queue.writeBuffer(
-      this.uniformBuffer,
-      64,
-      <ArrayBuffer>projection
-    )
+    this.device.queue.writeBuffer( this.uniformBuffer, 0, <ArrayBuffer>camera.get_model())
+    this.device.queue.writeBuffer( this.uniformBuffer, 64, <ArrayBuffer>projection)
 
     const commandEncoder: GPUCommandEncoder = this.device.createCommandEncoder()
-    const textureView: GPUTextureView = this.context
-      .getCurrentTexture()
-      .createView()
+    const textureView: GPUTextureView = this.context .getCurrentTexture() .createView()
     const renderPassDescriptor: GPURenderPassDescriptor = {
       colorAttachments: [
         {
@@ -237,8 +227,7 @@ export class Renderer {
       depthStencilAttachment: this.depthStencilAttachment,
     }
 
-    const passEncoder: GPURenderPassEncoder =
-      commandEncoder.beginRenderPass(renderPassDescriptor)
+    const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor)
 
     passEncoder.setPipeline(this.pipeline)
     passEncoder.setVertexBuffer(0, this.squareMesh.buffer)

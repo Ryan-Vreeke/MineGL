@@ -11,7 +11,7 @@ export class App {
 
   constructor(canvas: HTMLCanvasElement) {
     const chunkSize: number = 16
-    const chunkCount: number = 16
+    const chunkCount: number = 4
 
     this.canvas = canvas
     this.renderer = new Renderer(canvas, (chunkCount * chunkCount) * (chunkSize * chunkSize))
