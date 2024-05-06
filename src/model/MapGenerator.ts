@@ -1,6 +1,7 @@
 import { mat4, vec3 } from "gl-matrix"
 import { Block } from "./Block"
 import { Chunk } from "./Chunk"
+import { SimplexNoise } from "ts-perlin-simplex"
 
 export class MapGen {
   chunkSize: number
@@ -8,6 +9,9 @@ export class MapGen {
   chunks: Chunk[]
   blocks: Block[]
   mapSize: number
+  simplex: any
+  lacunarity: number
+  persistance: number
 
   constructor(chunkSize: number, mapSize: number) {
     this.chunkSize = chunkSize
@@ -15,6 +19,10 @@ export class MapGen {
     this.mapSize = mapSize
     this.chunks = new Array<Chunk>(mapSize * mapSize)
     this.blocks = []
+    this.simplex = new SimplexNoise()
+
+    this.lacunarity = 2
+    this.persistance = 0.5
   }
 
   createChunk(dX: number, dY: number): Chunk {
@@ -24,7 +32,12 @@ export class MapGen {
 
     let chunk = new Chunk(dX, dY, this.chunkSize)
     chunk.createChunk((x, y) => {
-      return 0
+      var z0: number = this.octave(x, y, 0)
+      var z1: number = this.octave(x, y, 1)
+      var z2: number = this.octave(x, y, 2)
+
+      var z: number = z0 + z1 + z2
+      return Math.floor(z * 50)
     })
 
     const i: number = dX + this.center
@@ -39,6 +52,12 @@ export class MapGen {
     const i: number = wX + this.center
     const j: number = wY + this.center
     return this.chunks[i * this.mapSize + j]
+  }
+
+  octave(x: number, y: number, order: number): number {
+    let hz: number = Math.pow(this.lacunarity, order)
+    let amp: number = Math.pow(this.persistance, order)
+    return this.simplex.noise((x / 150) * hz, (y / 150) * hz) * amp
   }
 
   getBlocks(): Block[] {
