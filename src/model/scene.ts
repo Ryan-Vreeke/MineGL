@@ -14,10 +14,10 @@ export class Scene {
   constructor(chunkCount: number, chunkSize: number) {
     this.chunkCount = chunkCount
     this.chunkSize = chunkSize
-    const buffSize = chunkSize * chunkSize * (chunkCount * chunkCount)
+    const buffSize = chunkSize * chunkSize * (chunkCount * chunkCount) * 6
 
-    this.object_data = new Float32Array(16 * buffSize)
-    this.player = new Camera([0, 0, 10], 0, 0)
+    // this.object_data = new Float32Array(16 * buffSize)
+    this.player = new Camera([-20, 0, 10], 0, 0)
     this.mapGen = new MapGen(chunkSize, chunkCount)
     const range = Math.floor(chunkCount / 2)
 

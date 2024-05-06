@@ -25,7 +25,7 @@ export class Chunk {
         const globalY: number = this.y * this.size + y
         const z: number = height(globalX, globalY)
 
-        var block = new Block([globalX, globalY, z], 0)
+        var block = new Block([globalX, globalY, z])
         this.blocks[(x + this.offset) * this.size + (y + this.offset)] = block
         i++
       }

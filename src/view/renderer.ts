@@ -1,8 +1,9 @@
 import shader from "./shaders/shaders.wgsl"
-import { SquareMesh } from "./meshes/square_mesh"
+import {FaceMesh} from "./meshes/face_mesh"
 import { mat4 } from "gl-matrix"
 import { Camera } from "../model/Camera"
 import { Material } from "../model/material"
+
 export class Renderer {
   canvas: HTMLCanvasElement
 
@@ -21,7 +22,8 @@ export class Renderer {
   bindGroup!: GPUBindGroup
   pipeline!: GPURenderPipeline
 
-  squareMesh!: SquareMesh
+  // squareMesh!: SquareMesh
+  faceMesh!: FaceMesh
   material!: Material
   objectBuffer!: GPUBuffer
   objCount: number
@@ -162,7 +164,7 @@ export class Renderer {
           code: shader,
         }),
         entryPoint: "vs_main",
-        buffers: [this.squareMesh.bufferLayout],
+        buffers: [this.faceMesh.bufferLayout],
       },
       fragment: {
         module: this.device.createShaderModule({
@@ -183,7 +185,7 @@ export class Renderer {
   }
 
   async createAssets() {
-    this.squareMesh = new SquareMesh(this.device)
+    this.faceMesh = new FaceMesh(this.device)
     this.material = new Material()
     await this.material.initialize(
       this.device,
@@ -191,7 +193,7 @@ export class Renderer {
     )
 
     const modelBufferDescriptor: GPUBufferDescriptor = {
-      size: 64 * this.objCount,
+      size: 64 * this.objCount * 6,
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     }
 
@@ -230,9 +232,9 @@ export class Renderer {
     const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor)
 
     passEncoder.setPipeline(this.pipeline)
-    passEncoder.setVertexBuffer(0, this.squareMesh.buffer)
+    passEncoder.setVertexBuffer(0, this.faceMesh.buffer)
     passEncoder.setBindGroup(0, this.bindGroup)
-    passEncoder.draw(36, object_count, 0, 0)
+    passEncoder.draw(6, object_count, 0, 0)
     passEncoder.end()
 
     this.device.queue.submit([commandEncoder.finish()])

@@ -1,5 +1,5 @@
 import { mat4, vec3 } from "gl-matrix"
-import { Block } from "./Block"
+import { Block, Face } from "./Block"
 import { Chunk } from "./Chunk"
 import { SimplexNoise } from "ts-perlin-simplex"
 
@@ -8,6 +8,7 @@ export class MapGen {
   center: number
   chunks: Chunk[]
   blocks: Block[]
+  faces: Face[]
   mapSize: number
   simplex: any
   lacunarity: number
@@ -19,6 +20,7 @@ export class MapGen {
     this.mapSize = mapSize
     this.chunks = new Array<Chunk>(mapSize * mapSize)
     this.blocks = []
+    this.faces = []
     this.simplex = new SimplexNoise()
 
     this.lacunarity = 2
@@ -31,20 +33,27 @@ export class MapGen {
     }
 
     let chunk = new Chunk(dX, dY, this.chunkSize)
-    chunk.createChunk((x, y) => {
-      var z0: number = this.octave(x, y, 0)
-      var z1: number = this.octave(x, y, 1)
-      var z2: number = this.octave(x, y, 2)
+    // chunk.createChunk((x, y) => {
+    //   var z0: number = this.octave(x, y, 0)
+    //   var z1: number = this.octave(x, y, 1)
+    //   var z2: number = this.octave(x, y, 2)
 
-      var z: number = z0 + z1 + z2
-      return Math.floor(z * 50)
+    //   var z: number = z0 + z1 + z2
+    //   return Math.floor(z * 50)
+    // })
+
+    chunk.createChunk((x, y) => {
+      return 0
     })
 
     const i: number = dX + this.center
     const j: number = dY + this.center
 
     this.chunks[i * this.mapSize + j] = chunk
-    this.blocks.push(...chunk.blocks)
+    // this.blocks.push(...chunk.blocks)
+    chunk.blocks.forEach((block) => {
+      this.faces.push(...block.get_faces())
+    })
     return chunk
   }
 
@@ -64,14 +73,18 @@ export class MapGen {
     return this.blocks
   }
 
+  getFaces(): Face[] {
+    return this.faces
+  }
+
   getObjectData(): Float32Array {
     const object_data: Float32Array = new Float32Array(
-      16 * this.mapSize * this.mapSize * this.chunkSize * this.chunkSize
+      16 * this.mapSize * this.mapSize * this.chunkSize * this.chunkSize * 6
     )
     var i: number = 0
 
-    this.blocks.forEach((block) => {
-      var model = block.get_model()
+    this.faces.forEach((face) => {
+      var model = face.get_model()
       for (var j: number = 0; j < 16; j++) {
         object_data[16 * i + j] = <number>model.at(j)
       }

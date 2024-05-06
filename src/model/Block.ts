@@ -3,26 +3,37 @@ import { Deg2Rad } from "./math_stuff"
 
 export class Block {
   position: vec3
-  eulers: vec3
-  model!: mat4
+  faces: Face[]
 
-  constructor(position: vec3, theta: number) {
+  constructor(position: vec3) {
     this.position = position
-    this.eulers = vec3.create()
-    this.eulers[2] = theta
+    this.faces = []
 
-    this.model = mat4.create()
-    mat4.translate(this.model, this.model, this.position)
-    mat4.rotateZ(this.model, this.model, 0)
+    this.faces.push( new Face([position[0], position[1], position[2]], [Deg2Rad(0), Deg2Rad(0), Deg2Rad(-90)]))
+    this.faces.push( new Face([position[0], position[1], position[2]], [0, 0, Deg2Rad(180)]))
+    this.faces.push( new Face([position[0], position[1], position[2]], [0, Deg2Rad(0), 0]))
+    this.faces.push( new Face([position[0], position[1], position[2]], [Deg2Rad(0), Deg2Rad(0), Deg2Rad(90)]))
+    this.faces.push( new Face([position[0], position[1], position[2]], [Deg2Rad(-90), 0, 0]))
+    this.faces.push( new Face([position[0], position[1], position[2]], [Deg2Rad(90), 0, 0]))
   }
 
-  update() {
-    this.eulers[2] += 1
-    this.eulers[2] %= 360
+  get_faces(): Face[] {
+    return this.faces
+  }
+}
+
+export class Face {
+  position: vec3
+  model: mat4
+
+  constructor(position: vec3, rotation: vec3) {
+    this.position = position
 
     this.model = mat4.create()
     mat4.translate(this.model, this.model, this.position)
-    mat4.rotateZ(this.model, this.model, Deg2Rad(this.eulers[2]))
+    mat4.rotateX(this.model, this.model, rotation[0])
+    mat4.rotateY(this.model, this.model, rotation[1])
+    mat4.rotateZ(this.model, this.model, rotation[2])
   }
 
   get_model(): mat4 {
