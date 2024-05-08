@@ -5,16 +5,30 @@ export class Block {
   position: vec3
   faces: Face[]
 
-  constructor(position: vec3) {
+  constructor(position: vec3, nBlocks: number[] ) {
     this.position = position
     this.faces = []
+    
+    var faceDir: Face[] = []
 
-    this.faces.push( new Face([position[0], position[1], position[2]], [Deg2Rad(0), Deg2Rad(0), Deg2Rad(-90)]))
-    this.faces.push( new Face([position[0], position[1], position[2]], [0, 0, Deg2Rad(180)]))
-    this.faces.push( new Face([position[0], position[1], position[2]], [0, Deg2Rad(0), 0]))
-    this.faces.push( new Face([position[0], position[1], position[2]], [Deg2Rad(0), Deg2Rad(0), Deg2Rad(90)]))
-    this.faces.push( new Face([position[0], position[1], position[2]], [Deg2Rad(-90), 0, 0]))
-    this.faces.push( new Face([position[0], position[1], position[2]], [Deg2Rad(90), 0, 0]))
+
+    faceDir.push( new Face([position[0] - 0.5, position[1], position[2]], [Deg2Rad(-90), Deg2Rad(-90), 0]))//x-
+    faceDir.push( new Face([position[0] + 0.5, position[1], position[2]], [Deg2Rad(-90), Deg2Rad(90), 0]))//x+
+
+    faceDir.push( new Face([position[0], position[1] - 0.5, position[2]], [Deg2Rad(90), Deg2Rad(0), Deg2Rad(180)]))//BOTTOM
+    faceDir.push( new Face([position[0], position[1] + 0.5, position[2]], [Deg2Rad(-90), Deg2Rad(0), Deg2Rad(0)]))//TOP
+
+    faceDir.push( new Face([position[0], position[1], position[2] + 0.5], [Deg2Rad(0), Deg2Rad(0), Deg2Rad(0)]))//UP
+    faceDir.push( new Face([position[0], position[1], position[2] - 0.5], [Deg2Rad(0), Deg2Rad(180), Deg2Rad(0)]))//Down
+
+    for(var i = 0; i < nBlocks.length; i++){
+      if(nBlocks[i] == -100){
+        this.faces.push(faceDir[i])
+      }
+    }
+
+    this.faces.push(faceDir[4])
+    this.faces.push(faceDir[5])
   }
 
   get_faces(): Face[] {
@@ -27,7 +41,7 @@ export class Face {
   model: mat4
 
   constructor(position: vec3, rotation: vec3) {
-    this.position = position
+    this.position = position 
 
     this.model = mat4.create()
     mat4.translate(this.model, this.model, this.position)

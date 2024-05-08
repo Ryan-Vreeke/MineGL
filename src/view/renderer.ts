@@ -193,7 +193,7 @@ export class Renderer {
     )
 
     const modelBufferDescriptor: GPUBufferDescriptor = {
-      size: 64 * this.objCount * 6,
+      size: 64 * this.objCount,
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     }
 

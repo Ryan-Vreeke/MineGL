@@ -15,7 +15,7 @@ export class App {
     const chunkCount: number = 3
 
     this.canvas = canvas
-    this.renderer = new Renderer(canvas, (chunkCount * chunkCount) * (chunkSize * chunkSize))
+    this.renderer = new Renderer(canvas, (chunkCount * chunkCount) * (chunkSize * chunkSize) * 6)
     this.renderer.Initialize()
 
     this.scene = new Scene(chunkCount, chunkSize)

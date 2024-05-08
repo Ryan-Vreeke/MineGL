@@ -33,25 +33,24 @@ export class MapGen {
     }
 
     let chunk = new Chunk(dX, dY, this.chunkSize)
-    // chunk.createChunk((x, y) => {
-    //   var z0: number = this.octave(x, y, 0)
-    //   var z1: number = this.octave(x, y, 1)
-    //   var z2: number = this.octave(x, y, 2)
-
-    //   var z: number = z0 + z1 + z2
-    //   return Math.floor(z * 50)
-    // })
-
     chunk.createChunk((x, y) => {
-      return 0
+      var z0: number = this.octave(x, y, 0)
+      var z1: number = this.octave(x, y, 1)
+      var z2: number = this.octave(x, y, 2)
+
+      var z: number = z0 + z1 + z2
+      return Math.floor(z * 50)
     })
+
+    // chunk.createChunk((x, y) => {
+    //   return 0
+    // })
 
     const i: number = dX + this.center
     const j: number = dY + this.center
 
     this.chunks[i * this.mapSize + j] = chunk
-    // this.blocks.push(...chunk.blocks)
-    chunk.blocks.forEach((block) => {
+    chunk.getBlocks().forEach((block) => {
       this.faces.push(...block.get_faces())
     })
     return chunk

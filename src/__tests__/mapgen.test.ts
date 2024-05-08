@@ -1,6 +1,7 @@
 import { MapGen } from "../model/MapGenerator"
 import { describe, test, expect, beforeEach } from "@jest/globals"
 import { Chunk } from "../model/Chunk"
+import { Block } from "../model/Block"
 
 describe("MapGen Tests", () => {
   var map: MapGen
@@ -73,23 +74,109 @@ describe("MapGen Tests", () => {
   })
 
   test("Blocks Placed In World", () => {
-    const blocks = c0.blocks
+    const mm = new MapGen(4, 3)
+    const c: Chunk = mm.createChunk(0,0)
 
-    expect(blocks[0].position).toEqual([ -8, -8, 0, ])
-    expect(blocks[255].position).toEqual([ 7, 7, 0, ])
-  })
-
-  test("Get blocks", () => {
-    const mm = new MapGen(16, 3)
-    for (var i: number = -1; i < 2; i++) {
-      for (var j: number = -1; j < 2; j++) {
-        mm.createChunk(i, j)
+    for(var i = 1; i < 5; i++){
+      for(var j = 1; j < 5; j++){
+        expect(c.at(i, j)).toBe(1)
       }
     }
-    const blocks = mm.getBlocks()
+  })
 
-    expect(blocks.length).toBe(
-      mm.chunkSize * mm.chunkSize * mm.mapSize * mm.mapSize
-    )
+  test("Chunk Size + Space", () => {
+    const mm = new MapGen(4, 3)
+    const c: Chunk = mm.createChunk(0,0)
+
+    expect((c.size + 2) * (c.size + 2)).toBe(c.blocks.length)
+  })
+
+  test("Neighbors top left corner", () => {
+    const mm = new MapGen(4, 3)
+    const c: Chunk = mm.createChunk(0,0)
+
+    const n = c.getNeighbors(1,1)
+
+    expect(n[0]).toBe(0)
+    expect(n[1]).toBe(1)
+    expect(n[2]).toBe(0)
+    expect(n[3]).toBe(1)
+
+  })
+
+  test("Neighbors middle edge", () => {
+    const mm = new MapGen(4, 3)
+    const c: Chunk = mm.createChunk(0,0)
+
+    const n = c.getNeighbors(4,2)
+
+    expect(n[0]).toBe(1)
+    expect(n[1]).toBe(0)
+    expect(n[2]).toBe(1)
+    expect(n[3]).toBe(1)
+  })
+
+  test("Neighbors middle", () => {
+    const mm = new MapGen(4, 3)
+    const c: Chunk = mm.createChunk(0,0)
+
+    const n = c.getNeighbors(2,2)
+
+    expect(n[0]).toBe(1)
+    expect(n[1]).toBe(1)
+    expect(n[2]).toBe(1)
+    expect(n[3]).toBe(1)
+  })
+
+  test("Neighbors bottom right corner", () => {
+    const mm = new MapGen(4, 3)
+    const c: Chunk = mm.createChunk(0,0)
+
+    const n = c.getNeighbors(4,4)
+
+    expect(n[0]).toBe(1)
+    expect(n[1]).toBe(0)
+    expect(n[2]).toBe(1)
+    expect(n[3]).toBe(0)
+  })
+
+  test("Chunk White Space", () => {
+    const mm = new MapGen(16, 3)
+    const c: Chunk = mm.createChunk(0,0)
+
+
+    for(var i = 0; i < c.size + 2; i++){
+      expect(c.at(0, i)).toBe(0)
+      expect(c.at(c.size + 1, i)).toBe(0)
+    }
+  })
+
+  test("Get Corner Block Faces", () => {
+    const mm = new MapGen(16, 3)
+    const c: Chunk = mm.createChunk(0,0)
+    const n = c.getNeighbors(1,1)//0 1 0 1 L R T B
+    const b: Block = new Block([0,0,0], n)
+
+    expect(b.get_faces().length).toBe(4)
+    expect(b.get_faces()[0].position[0]).toBe(-0.5)
+    expect(b.get_faces()[1].position[1]).toBe(-0.5)
+  })
+
+
+  test("Get middle Block Faces", () => {
+    const mm = new MapGen(16, 3)
+    const c: Chunk = mm.createChunk(0,0)
+    const n = c.getNeighbors(2,2)//1 1 1 1 L R T B
+    const b: Block = new Block([0,0,0], n)
+
+    expect(b.get_faces().length).toBe(2)
+  })
+
+  test("Single Block Faces", () => {
+    const mm = new MapGen(16, 3)
+    const c: Chunk = mm.createChunk(0,0)
+    const b: Block = new Block([0,0,0], [0,0,0,0])
+
+    expect(b.get_faces().length).toBe(6)
   })
 })
