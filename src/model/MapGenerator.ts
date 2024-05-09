@@ -1,14 +1,12 @@
-import { mat4, vec3 } from "gl-matrix"
-import { Block, Face } from "./Block"
-import { Chunk } from "./Chunk"
+import { Face } from "./Block"
 import { SimplexNoise } from "ts-perlin-simplex"
+import { Block } from "./Block"
 
 export class MapGen {
   chunkSize: number
-  center: number
-  chunks: Chunk[]
-  blocks: Block[]
   faces: Face[]
+  blocks: number[][]
+  
   mapSize: number
   simplex: any
   lacunarity: number
@@ -16,60 +14,48 @@ export class MapGen {
 
   constructor(chunkSize: number, mapSize: number) {
     this.chunkSize = chunkSize
-    this.center = mapSize / 2
     this.mapSize = mapSize
-    this.chunks = new Array<Chunk>(mapSize * mapSize)
-    this.blocks = []
     this.faces = []
+    this.blocks = []
     this.simplex = new SimplexNoise()
 
     this.lacunarity = 2
     this.persistance = 0.5
-  }
 
-  createChunk(dX: number, dY: number): Chunk {
-    if (dX >= this.mapSize - 1 || dY >= this.mapSize - 1) {
-      this.mapSize += 2
+
+    for(var i = 0; i < chunkSize; i++){
+      for(var j = 0; j < chunkSize; j++){
+        this.blocks[i * this.chunkSize + j] = new Array(chunkSize)
+        this.blocks[i * this.chunkSize + j].fill(0 as number)
+
+        for(var k = 0; k < chunkSize; k++){
+          this.blocks[i * this.chunkSize + j][k] = 1
+        }
+      }
     }
-
-    let chunk = new Chunk(dX, dY, this.chunkSize)
-    chunk.createChunk((x, y) => {
-      var z0: number = this.octave(x, y, 0)
-      var z1: number = this.octave(x, y, 1)
-      var z2: number = this.octave(x, y, 2)
-
-      var z: number = z0 + z1 + z2
-      return Math.floor(z * 50)
-    })
-
-    // chunk.createChunk((x, y) => {
-    //   return 0
-    // })
-
-    const i: number = dX + this.center
-    const j: number = dY + this.center
-
-    this.chunks[i * this.mapSize + j] = chunk
-    chunk.getBlocks().forEach((block) => {
-      this.faces.push(...block.get_faces())
-    })
-    return chunk
   }
 
-  getChunk(wX: number, wY: number): Chunk {
-    const i: number = wX + this.center
-    const j: number = wY + this.center
-    return this.chunks[i * this.mapSize + j]
+  get_objCount(): number{
+    return this.faces.length
   }
+
+  heightMap(x:number, y: number): number{
+    return 0
+  }
+
+  // heightMap(x:number, y: number): number {
+  //   var z0: number = this.octave(x, y, 0)
+  //   var z1: number = this.octave(x, y, 1)
+  //   var z2: number = this.octave(x, y, 2)
+
+  //   var z: number = z0 + z1 + z2
+  //   return Math.floor(z * 50)
+  // }
 
   octave(x: number, y: number, order: number): number {
     let hz: number = Math.pow(this.lacunarity, order)
     let amp: number = Math.pow(this.persistance, order)
     return this.simplex.noise((x / 150) * hz, (y / 150) * hz) * amp
-  }
-
-  getBlocks(): Block[] {
-    return this.blocks
   }
 
   getFaces(): Face[] {
@@ -81,6 +67,17 @@ export class MapGen {
       16 * this.mapSize * this.mapSize * this.chunkSize * this.chunkSize * 6
     )
     var i: number = 0
+
+    for(var i = 0; i < this.chunkSize; i++){
+      for(var j = 0; j < this.chunkSize; j++){
+        for(var k = 0; k < this.chunkSize; k++){
+          const isBlock = this.blocks[i * this.chunkSize + j][k]
+
+          if(thi)
+        }
+      }
+    }
+
 
     this.faces.forEach((face) => {
       var model = face.get_model()

@@ -14,21 +14,13 @@ export class Scene {
   constructor(chunkCount: number, chunkSize: number) {
     this.chunkCount = chunkCount
     this.chunkSize = chunkSize
-    const buffSize = chunkSize * chunkSize * (chunkCount * chunkCount) * 6
 
     // this.object_data = new Float32Array(16 * buffSize)
     this.player = new Camera([-20, 0, 10], 0, 0)
     this.mapGen = new MapGen(chunkSize, chunkCount)
-    const range = Math.floor(chunkCount / 2)
-
-    for (var i: number = -range; i <= range; i++) {
-      for (var j: number = -range; j <= range; j++) {
-        this.mapGen.createChunk(i, j)
-      }
-    }
-
     this.object_data = this.mapGen.getObjectData()
-    this.object_count = buffSize
+    this.object_count = this.mapGen.get_objCount()
+
   }
 
   update() {
