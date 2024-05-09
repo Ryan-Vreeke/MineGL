@@ -22,13 +22,13 @@ export class Block {
     faceDir.push( new Face([position[0], position[1], position[2] - 0.5], [Deg2Rad(0), Deg2Rad(180), Deg2Rad(0)]))//Down
 
     for(var i = 0; i < nBlocks.length; i++){
-      if(nBlocks[i] == -100){
+      if(nBlocks[i] < position[2]){
         this.faces.push(faceDir[i])
       }
     }
 
     this.faces.push(faceDir[4])
-    this.faces.push(faceDir[5])
+    // this.faces.push(faceDir[5])
   }
 
   get_faces(): Face[] {

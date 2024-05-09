@@ -57,6 +57,13 @@ export class Chunk {
 
         let block: Block = new Block([globalX, globalY, z], neighbors)
         geoBlocks.push(block)
+
+        const minNei = z - Math.min(...neighbors)
+
+        for (let k = z; k > minNei; k--) {
+          block = new Block([globalX, globalY, k], neighbors)
+          geoBlocks.push(block)
+        }
       }
     }
 

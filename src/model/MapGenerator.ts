@@ -42,10 +42,6 @@ export class MapGen {
       return Math.floor(z * 50)
     })
 
-    // chunk.createChunk((x, y) => {
-    //   return 0
-    // })
-
     const i: number = dX + this.center
     const j: number = dY + this.center
 
