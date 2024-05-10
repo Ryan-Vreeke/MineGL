@@ -10,13 +10,13 @@ export class Scene {
   chunkSize: number
   chunkCount: number
   mapGen: MapGen
+  i: number
 
   constructor(chunkCount: number, chunkSize: number) {
     this.chunkCount = chunkCount
     this.chunkSize = chunkSize
-    const buffSize = chunkSize * chunkSize * (chunkCount * chunkCount) * 6
+    this.i = 0
 
-    // this.object_data = new Float32Array(16 * buffSize)
     this.player = new Camera([-20, 0, 10], 0, 0)
     this.mapGen = new MapGen(chunkSize, chunkCount)
     const range = Math.floor(chunkCount / 2)
@@ -28,7 +28,7 @@ export class Scene {
     }
 
     this.object_data = this.mapGen.getObjectData()
-    this.object_count = buffSize
+    this.object_count = this.object_data.length / 16
   }
 
   update() {

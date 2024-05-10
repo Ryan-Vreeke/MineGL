@@ -7,8 +7,7 @@ export class MapGen {
   chunkSize: number
   center: number
   chunks: Chunk[]
-  blocks: Block[]
-  faces: Face[]
+
   mapSize: number
   simplex: any
   lacunarity: number
@@ -18,13 +17,18 @@ export class MapGen {
     this.chunkSize = chunkSize
     this.center = mapSize / 2
     this.mapSize = mapSize
-    this.chunks = new Array<Chunk>(mapSize * mapSize)
-    this.blocks = []
-    this.faces = []
+    this.chunks = []
+
     this.simplex = new SimplexNoise()
 
     this.lacunarity = 2
     this.persistance = 0.5
+  }
+
+  octave(x: number, y: number, order: number): number {
+    let hz: number = Math.pow(this.lacunarity, order)
+    let amp: number = Math.pow(this.persistance, order)
+    return this.simplex.noise((x / 150) * hz, (y / 150) * hz) * amp
   }
 
   createChunk(dX: number, dY: number): Chunk {
@@ -39,16 +43,10 @@ export class MapGen {
       var z2: number = this.octave(x, y, 2)
 
       var z: number = z0 + z1 + z2
-      return Math.floor(z * 50)
+      return Math.max(0, Math.floor(z * 25) + 25)
     })
+    this.chunks.push(chunk)
 
-    const i: number = dX + this.center
-    const j: number = dY + this.center
-
-    this.chunks[i * this.mapSize + j] = chunk
-    chunk.getBlocks().forEach((block) => {
-      this.faces.push(...block.get_faces())
-    })
     return chunk
   }
 
@@ -58,27 +56,23 @@ export class MapGen {
     return this.chunks[i * this.mapSize + j]
   }
 
-  octave(x: number, y: number, order: number): number {
-    let hz: number = Math.pow(this.lacunarity, order)
-    let amp: number = Math.pow(this.persistance, order)
-    return this.simplex.noise((x / 150) * hz, (y / 150) * hz) * amp
-  }
-
-  getBlocks(): Block[] {
-    return this.blocks
-  }
-
-  getFaces(): Face[] {
-    return this.faces
-  }
-
   getObjectData(): Float32Array {
-    const object_data: Float32Array = new Float32Array(
-      16 * this.mapSize * this.mapSize * this.chunkSize * this.chunkSize * 6
-    )
+    let faces: Face[] = []
+
+    this.chunks.forEach((chunk) => {
+      for (var x = 0; x < chunk.blocks.length; x++) {
+        for (var y = 0; y < chunk.blocks.length; y++) {
+          for (var z = -1; z < chunk.blocks[x][y].length; z++) {
+            faces.push(...chunk.neighbors(x, y, z))
+          }
+        }
+      }
+    })
+
+    const object_data: Float32Array = new Float32Array(16 * faces.length)
     var i: number = 0
 
-    this.faces.forEach((face) => {
+    faces.forEach((face) => {
       var model = face.get_model()
       for (var j: number = 0; j < 16; j++) {
         object_data[16 * i + j] = <number>model.at(j)
