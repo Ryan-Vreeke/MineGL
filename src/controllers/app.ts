@@ -44,6 +44,7 @@ export class App {
 
     this.renderer.render(
       this.scene.get_blocks(),
+      this.scene.get_textures(),
       this.scene.object_count,
       this.scene.get_player()
     )

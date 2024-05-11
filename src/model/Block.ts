@@ -11,9 +11,11 @@ export class Block {
 export class Face {
   position: vec3
   model: mat4
+  type: string
 
-  constructor(position: vec3, rotation: vec3) {
+  constructor(position: vec3, rotation: vec3, type: string) {
     this.position = position 
+    this.type = type
 
     this.model = mat4.create()
     mat4.translate(this.model, this.model, this.position)

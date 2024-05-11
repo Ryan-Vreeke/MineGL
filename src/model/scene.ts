@@ -4,6 +4,7 @@ import { MapGen } from "./MapGenerator"
 
 export class Scene {
   object_data: Float32Array
+  texture_data: Float32Array
   object_count: number
   player: Camera
 
@@ -27,12 +28,19 @@ export class Scene {
       }
     }
 
-    this.object_data = this.mapGen.getObjectData()
+    let data = this.mapGen.getObjectData()
+
+    this.object_data = data[0]
+    this.texture_data = data[1]
     this.object_count = this.object_data.length / 16
   }
 
   update() {
     this.player.update()
+  }
+  
+  get_textures(): Float32Array{
+    return this.texture_data
   }
 
   get_blocks(): Float32Array {

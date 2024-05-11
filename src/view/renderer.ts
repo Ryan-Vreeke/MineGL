@@ -1,5 +1,5 @@
 import shader from "./shaders/shaders.wgsl"
-import {FaceMesh} from "./meshes/face_mesh"
+import { FaceMesh } from "./meshes/face_mesh"
 import { mat4 } from "gl-matrix"
 import { Camera } from "../model/Camera"
 import { Material } from "../model/material"
@@ -26,6 +26,7 @@ export class Renderer {
   faceMesh!: FaceMesh
   material!: Material
   objectBuffer!: GPUBuffer
+  textureBuffer!: GPUBuffer
   objCount: number
 
   constructor(canvas: HTMLCanvasElement, objCount: number) {
@@ -123,6 +124,14 @@ export class Renderer {
           visibility: GPUShaderStage.FRAGMENT,
           sampler: {},
         },
+        {
+          binding: 4,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: {
+            type: "read-only-storage",
+            hasDynamicOffset: false
+          }
+        }
       ],
     })
 
@@ -148,6 +157,12 @@ export class Renderer {
         {
           binding: 3,
           resource: this.material.sampler,
+        },
+        {
+          binding: 4,
+          resource: {
+            buffer: this.textureBuffer,
+          },
         },
       ],
     })
@@ -179,7 +194,7 @@ export class Renderer {
       },
       primitive: {
         topology: "triangle-list",
-        cullMode: "back"
+        cullMode: "back",
       },
     })
   }
@@ -187,20 +202,27 @@ export class Renderer {
   async createAssets() {
     this.faceMesh = new FaceMesh(this.device)
     this.material = new Material()
-    await this.material.initialize(
-      this.device,
-      "dist/textures/terrain.png"
-    )
+    await this.material.initialize(this.device, "dist/textures/terrain.png")
 
     const modelBufferDescriptor: GPUBufferDescriptor = {
       size: 64 * this.objCount,
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     }
 
+    const textureBufferDescriptor: GPUBufferDescriptor = {
+      size: 8 * this.objCount,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    }
     this.objectBuffer = this.device.createBuffer(modelBufferDescriptor)
+    this.textureBuffer = this.device.createBuffer(textureBufferDescriptor)
   }
 
-  async render(blocks: Float32Array, object_count: number, camera: Camera) {
+  async render(
+    blocks: Float32Array,
+    textures: Float32Array,
+    object_count: number,
+    camera: Camera
+  ) {
     const projection = mat4.create()
 
     mat4.perspective(projection, Math.PI / 4, 800 / 600, 0.1, 1000)
@@ -212,11 +234,30 @@ export class Renderer {
       0,
       blocks.length
     )
-    this.device.queue.writeBuffer( this.uniformBuffer, 0, <ArrayBuffer>camera.get_model())
-    this.device.queue.writeBuffer( this.uniformBuffer, 64, <ArrayBuffer>projection)
+
+    this.device.queue.writeBuffer(
+      this.textureBuffer,
+      0,
+      textures,
+      0,
+      textures.length
+    )
+
+    this.device.queue.writeBuffer(
+      this.uniformBuffer,
+      0,
+      <ArrayBuffer>camera.get_model()
+    )
+    this.device.queue.writeBuffer(
+      this.uniformBuffer,
+      64,
+      <ArrayBuffer>projection
+    )
 
     const commandEncoder: GPUCommandEncoder = this.device.createCommandEncoder()
-    const textureView: GPUTextureView = this.context .getCurrentTexture() .createView()
+    const textureView: GPUTextureView = this.context
+      .getCurrentTexture()
+      .createView()
     const renderPassDescriptor: GPURenderPassDescriptor = {
       colorAttachments: [
         {
@@ -229,7 +270,8 @@ export class Renderer {
       depthStencilAttachment: this.depthStencilAttachment,
     }
 
-    const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor)
+    const passEncoder: GPURenderPassEncoder =
+      commandEncoder.beginRenderPass(renderPassDescriptor)
 
     passEncoder.setPipeline(this.pipeline)
     passEncoder.setVertexBuffer(0, this.faceMesh.buffer)

@@ -56,7 +56,7 @@ export class MapGen {
     return this.chunks[i * this.mapSize + j]
   }
 
-  getObjectData(): Float32Array {
+  getObjectData(): [Float32Array, Float32Array] {
     let faces: Face[] = []
 
     this.chunks.forEach((chunk) => {
@@ -70,6 +70,7 @@ export class MapGen {
     })
 
     const object_data: Float32Array = new Float32Array(16 * faces.length)
+    const texture_data: Float32Array = new Float32Array(2 * faces.length)
     var i: number = 0
 
     faces.forEach((face) => {
@@ -77,9 +78,25 @@ export class MapGen {
       for (var j: number = 0; j < 16; j++) {
         object_data[16 * i + j] = <number>model.at(j)
       }
+
+      switch (face.type) {
+        case "grass-side":
+          texture_data[2 * i] = 3 / 16
+          texture_data[2 * i + 1] = 0
+          break
+        case "grass-top":
+          texture_data[2 * i] = 0
+          texture_data[2 * i + 1] = 0
+          break
+        case "dirt":
+          texture_data[2 * i] = 2 / 16
+          texture_data[2 * i + 1] = 0
+          break
+      }
+
       i++
     })
 
-    return object_data
+    return [object_data, texture_data]
   }
 }
