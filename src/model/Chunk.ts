@@ -40,9 +40,8 @@ export class Chunk {
 
     if (x == 0 || this.blocks[x - 1][y][z] == null) {
       faces.push(
-        new Face(
-          [block.position[0] - 0.5, block.position[1], block.position[2]],
-          [Deg2Rad(-90), Deg2Rad(-90), 0]
+        new Face( [block.position[0] - 0.5, block.position[1], block.position[2]],
+          [Deg2Rad(90), Deg2Rad(-90), 0]
         )
       )
     }
@@ -60,7 +59,7 @@ export class Chunk {
       faces.push(
         new Face(
           [block.position[0], block.position[1] - 0.5, block.position[2]],
-          [Deg2Rad(90), Deg2Rad(0), Deg2Rad(180)]
+          [Deg2Rad(90), Deg2Rad(0), Deg2Rad(0)]
         )
       ) //BOTTOM
     }

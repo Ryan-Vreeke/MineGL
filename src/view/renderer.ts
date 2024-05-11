@@ -189,7 +189,7 @@ export class Renderer {
     this.material = new Material()
     await this.material.initialize(
       this.device,
-      "dist/textures/grass_block_side.png"
+      "dist/textures/terrain.png"
     )
 
     const modelBufferDescriptor: GPUBufferDescriptor = {
