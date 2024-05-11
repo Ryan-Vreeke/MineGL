@@ -11,8 +11,8 @@ export class App {
   scale: number
 
   constructor(canvas: HTMLCanvasElement) {
-    const chunkSize: number = 32
-    const chunkCount: number = 5
+    const chunkSize: number = 16
+    const chunkCount: number = 10
 
     this.scene = new Scene(chunkCount, chunkSize)
 
