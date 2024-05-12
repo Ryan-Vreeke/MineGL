@@ -2,9 +2,11 @@ import { vec3, mat4 } from "gl-matrix"
 
 export class Block {
   position: vec3
+  type: string
 
-  constructor(position: vec3) {
+  constructor(position: vec3, type: string) {
     this.position = position
+    this.type = type
   }
 }
 

@@ -1,7 +1,12 @@
-import { mat4, vec3 } from "gl-matrix"
+import { mat4, vec3, vec2 } from "gl-matrix"
 import { Block, Face } from "./Block"
 import { Chunk } from "./Chunk"
 import { SimplexNoise } from "ts-perlin-simplex"
+
+const INTENSITY: number = 30
+const OFFSET: number = 60
+const NOISE_OFFSET: vec2 = [0, 0]
+const NOISE_SCALE: vec2 = [10, 10]
 
 export class MapGen {
   chunkSize: number
@@ -22,13 +27,13 @@ export class MapGen {
     this.simplex = new SimplexNoise()
 
     this.lacunarity = 2
-    this.persistance = 0.5
+    this.persistance = 0.7
   }
 
   octave(x: number, y: number, order: number): number {
     let hz: number = Math.pow(this.lacunarity, order)
     let amp: number = Math.pow(this.persistance, order)
-    return this.simplex.noise((x / 150) * hz, (y / 150) * hz) * amp
+    return this.simplex.noise(x * hz, y * hz) * amp
   }
 
   createChunk(dX: number, dY: number): Chunk {
@@ -38,12 +43,15 @@ export class MapGen {
 
     let chunk = new Chunk(dX, dY, this.chunkSize)
     chunk.createChunk((x, y) => {
-      var z0: number = this.octave(x, y, 0)
-      var z1: number = this.octave(x, y, 1)
-      var z2: number = this.octave(x, y, 2)
+      const perlinX = NOISE_OFFSET[0] + x / (this.chunkSize * NOISE_SCALE[0])
+      const perlinY = NOISE_OFFSET[1] + y / (this.chunkSize * NOISE_SCALE[1])
+
+      var z0: number = this.octave(perlinX, perlinY, 0)
+      var z1: number = this.octave(perlinX, perlinY, 1)
+      var z2: number = this.octave(perlinX, perlinY, 2)
 
       var z: number = z0 + z1 + z2
-      return Math.max(0, Math.floor(z * 25) + 25)
+      return Math.max(0, Math.floor(z * INTENSITY + OFFSET))
     })
     this.chunks.push(chunk)
 
@@ -92,6 +100,11 @@ export class MapGen {
           texture_data[2 * i] = 2 / 16
           texture_data[2 * i + 1] = 0
           break
+        case "stone":
+          texture_data[2 * i] = 1/ 16
+          texture_data[2 * i + 1] = 0
+          break
+
       }
 
       i++

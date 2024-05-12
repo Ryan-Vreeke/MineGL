@@ -24,11 +24,28 @@ export class Chunk {
         const globalY: number = this.y * this.size + j
         let z = height(globalX, globalY)
 
-        for (var k = -1; k < z; k++) {
-          this.blocks[i][j][k] = new Block([globalX, globalY, k])
+        for (var k = z; k >= 0; k--) {
+          var type: string
+          if (k == z) {
+            type = "grass" //TOP: 0. Sides: 3/16
+          } else if (k < z && k > z - 5) {
+            type = "dirt" //BLOCK: 2/16
+          } else {
+            type = "stone" //BLOCK 1/16
+          }
+
+          this.blocks[i][j][k] = new Block([globalX, globalY, k], type)
         }
       }
     }
+  }
+
+  blockAbove(x: number, y: number, z: number): boolean {
+    return this.blocks[x][y][z + 1] == null
+  }
+
+  blockBelow(x: number, y: number, z: number): boolean {
+    return this.blocks[x][y][z - 1] == null
   }
 
   neighbors(x: number, y: number, z: number): Face[] {
@@ -38,12 +55,29 @@ export class Chunk {
       return []
     }
 
+    let faceType
+    if (block.type == "grass") {
+      faceType = "grass-side"
+    } else {
+      faceType = block.type
+    }
+
+    if (this.blockAbove(x, y, z)) {
+      faces.push(
+        new Face(
+          [block.position[0], block.position[1], block.position[2] + 0.5],
+          [Deg2Rad(0), Deg2Rad(0), Deg2Rad(0)],
+          "grass-top"
+        )
+      ) //UP
+    }
+
     if (x == 0 || this.blocks[x - 1][y][z] == null) {
       faces.push(
         new Face(
           [block.position[0] - 0.5, block.position[1], block.position[2]],
           [Deg2Rad(90), Deg2Rad(-90), 0],
-          "grass-side"
+          faceType
         )
       )
     }
@@ -53,7 +87,7 @@ export class Chunk {
         new Face(
           [block.position[0] + 0.5, block.position[1], block.position[2]],
           [Deg2Rad(90), Deg2Rad(90), 0],
-          "grass-side"
+          faceType
         )
       ) //x+
     }
@@ -63,7 +97,7 @@ export class Chunk {
         new Face(
           [block.position[0], block.position[1] - 0.5, block.position[2]],
           [Deg2Rad(90), Deg2Rad(0), Deg2Rad(0)],
-          "grass-side"
+          faceType
         )
       ) //BOTTOM
     }
@@ -73,7 +107,7 @@ export class Chunk {
         new Face(
           [block.position[0], block.position[1] + 0.5, block.position[2]],
           [Deg2Rad(-90), Deg2Rad(0), Deg2Rad(180)],
-          "grass-side"
+          faceType
         )
       ) //TOP
     }
@@ -83,19 +117,9 @@ export class Chunk {
         new Face(
           [block.position[0], block.position[1], block.position[2] - 0.5],
           [Deg2Rad(0), Deg2Rad(180), Deg2Rad(0)],
-          "dirt"
+          faceType
         )
       ) //Down
-    }
-
-    if (this.blocks[x][y][z + 1] == null) {
-      faces.push(
-        new Face(
-          [block.position[0], block.position[1], block.position[2] + 0.5],
-          [Deg2Rad(0), Deg2Rad(0), Deg2Rad(0)],
-          "grass-top"
-        )
-      ) //UP
     }
 
     return faces
