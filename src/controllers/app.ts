@@ -1,20 +1,29 @@
 import { Renderer } from "../view/renderer"
 import { Scene } from "../model/scene"
+import { Physics } from "../model/Physics"
+
+const chunkSize: number = 16
+const chunkCount: number = 10
 
 export class App {
   canvas: HTMLCanvasElement
+  fpsCounter: HTMLElement
   renderer: Renderer
   scene: Scene
+  then: number
+  fps: number
 
   forwardAmount: number
   sideAmount: number
-  scale: number
+  physics: Physics
 
-  constructor(canvas: HTMLCanvasElement) {
-    const chunkSize: number = 16
-    const chunkCount: number = 10
+  constructor(canvas: HTMLCanvasElement, fpsCounter: HTMLElement) {
+    this.then = 0
+    this.fps = 0
+    this.fpsCounter = fpsCounter
 
     this.scene = new Scene(chunkCount, chunkSize)
+    this.physics = new Physics()
 
     this.canvas = canvas
     this.renderer = new Renderer(canvas, this.scene.object_count)
@@ -22,7 +31,10 @@ export class App {
 
     this.forwardAmount = 0
     this.sideAmount = 0
-    this.scale = 0.5
+
+    window.setInterval(() => {
+      this.fpsCounter.textContent = `fps:${this.fps.toFixed(1)}`
+    }, 200)
 
     document.addEventListener("keydown", this.keyDown.bind(this))
     document.addEventListener("keyup", this.keyUp.bind(this))
@@ -33,14 +45,16 @@ export class App {
     this.canvas.addEventListener("mousemove", this.handleMouseMove.bind(this))
   }
 
-  run = () => {
+  run = (now: number) => {
+    now *= 0.001
+    const deltaTime = now - this.then
+    this.fps = 1 / deltaTime
+    this.then = now
+
     var running: boolean = true
 
     this.scene.update()
-    this.scene.player_move(
-      this.sideAmount * this.scale,
-      this.forwardAmount * this.scale
-    )
+    this.scene.player_move(this.sideAmount, this.forwardAmount)
 
     this.renderer.render(
       this.scene.get_blocks(),
