@@ -22,11 +22,12 @@ export class Scene {
     this.mapGen = new MapGen(chunkSize, chunkCount)
     const range = Math.floor(chunkCount / 2)
 
-    for (var i: number = -range; i <= range; i++) {
-      for (var j: number = -range; j <= range; j++) {
-        this.mapGen.createChunk(i, j)
-      }
-    }
+    // for (var i: number = -range; i <= range - 1; i++) {
+    //   for (var j: number = -range; j <= range - 1; j++) {
+    //     this.mapGen.createChunk(i, j)
+    //   }
+    // }
+    this.mapGen.createChunk(0,0)
 
     let data = this.mapGen.getObjectData()
 
@@ -38,8 +39,8 @@ export class Scene {
   update() {
     this.player.update()
   }
-  
-  get_textures(): Float32Array{
+
+  get_textures(): Float32Array {
     return this.texture_data
   }
 
@@ -65,6 +66,17 @@ export class Scene {
       this.player.right,
       x
     )
+
+    this.mapGen.createChunk(
+      Math.floor(this.player.position[0] / this.chunkSize),
+      Math.floor(this.player.position[1] / this.chunkSize)
+    )
+
+    let data = this.mapGen.getObjectData()
+
+    this.object_data = data[0]
+    this.texture_data = data[1]
+    this.object_count = this.object_data.length / 16
   }
 
   player_look(dX: number, dY: number) {

@@ -40,6 +40,20 @@ export class Chunk {
     }
   }
 
+  getBlock(x: number, y: number, z: number): boolean {
+    let cx = x - this.size * this.x
+    let cy = y - this.size * this.y
+
+    try {
+      if (this.blocks[cx][cy][z] == null) {
+        return false
+      }
+    } catch (error) {
+      console.log(cx + ": " + cy)
+    }
+
+    return true
+  }
   blockAbove(x: number, y: number, z: number): boolean {
     return this.blocks[x][y][z + 1] == null
   }
@@ -72,7 +86,7 @@ export class Chunk {
       ) //UP
     }
 
-    if (x == 0 || this.blocks[x - 1][y][z] == null) {
+    if (x != 0 && this.blocks[x - 1][y][z] == null) {
       faces.push(
         new Face(
           [block.position[0] - 0.5, block.position[1], block.position[2]],
@@ -82,7 +96,7 @@ export class Chunk {
       )
     }
 
-    if (x == this.size - 1 || this.blocks[x + 1][y][z] == null) {
+    if (x != this.size - 1 && this.blocks[x + 1][y][z] == null) {
       faces.push(
         new Face(
           [block.position[0] + 0.5, block.position[1], block.position[2]],
@@ -92,7 +106,7 @@ export class Chunk {
       ) //x+
     }
 
-    if (y == 0 || this.blocks[x][y - 1][z] == null) {
+    if (y != 0 && this.blocks[x][y - 1][z] == null) {
       faces.push(
         new Face(
           [block.position[0], block.position[1] - 0.5, block.position[2]],
@@ -102,7 +116,7 @@ export class Chunk {
       ) //BOTTOM
     }
 
-    if (y == this.size - 1 || this.blocks[x][y + 1][z] == null) {
+    if (y != this.size - 1 && this.blocks[x][y + 1][z] == null) {
       faces.push(
         new Face(
           [block.position[0], block.position[1] + 0.5, block.position[2]],
@@ -112,7 +126,7 @@ export class Chunk {
       ) //TOP
     }
 
-    if (this.blocks[x][y][z - 1] == null) {
+    if (z != 0 && this.blocks[x][y][z - 1] == null) {
       faces.push(
         new Face(
           [block.position[0], block.position[1], block.position[2] - 0.5],

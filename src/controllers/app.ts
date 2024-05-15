@@ -34,7 +34,7 @@ export class App {
 
     window.setInterval(() => {
       this.fpsCounter.textContent = `fps:${this.fps.toFixed(1)}`
-    }, 200)
+    }, 100)
 
     document.addEventListener("keydown", this.keyDown.bind(this))
     document.addEventListener("keyup", this.keyUp.bind(this))
