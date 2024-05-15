@@ -7,6 +7,7 @@ export class Scene {
   texture_data: Float32Array
   object_count: number
   player: Camera
+  lastX: number
 
   chunkSize: number
   chunkCount: number
@@ -18,16 +19,16 @@ export class Scene {
     this.chunkSize = chunkSize
     this.i = 0
 
-    this.player = new Camera([-20, 0, 10], 0, 0)
+    this.player = new Camera([0, 0, 0], 0, 0)
+    this.lastX = 0
     this.mapGen = new MapGen(chunkSize, chunkCount)
     const range = Math.floor(chunkCount / 2)
 
-    // for (var i: number = -range; i <= range - 1; i++) {
-    //   for (var j: number = -range; j <= range - 1; j++) {
-    //     this.mapGen.createChunk(i, j)
-    //   }
-    // }
-    this.mapGen.createChunk(0,0)
+    for (var i: number = -range; i <= range; i++) {
+      for (var j: number = -range; j <= range; j++) {
+        this.mapGen.createChunk(i, j)
+      }
+    }
 
     let data = this.mapGen.getObjectData()
 
@@ -67,11 +68,25 @@ export class Scene {
       x
     )
 
-    this.mapGen.createChunk(
-      Math.floor(this.player.position[0] / this.chunkSize),
-      Math.floor(this.player.position[1] / this.chunkSize)
-    )
+    // const testX =  Math.floor(this.player.position[0] / 16)
+    // console.log(testX);
+    //
 
+    // if (testX > this.mapGen.mapSize - 1) {
+    //   this.mapGen.move()
+
+    //   let data = this.mapGen.getObjectData()
+
+    //   this.object_data = data[0]
+    //   this.texture_data = data[1]
+    //   this.object_count = this.object_data.length / 16
+    // }
+
+    // this.lastX = this.player.position[0]
+  }
+
+  moveMap() {
+    this.mapGen.move()
     let data = this.mapGen.getObjectData()
 
     this.object_data = data[0]

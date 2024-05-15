@@ -62,6 +62,35 @@ export class MapGen {
     return chunk
   }
 
+  move() {
+    let newX = this.chunks[this.chunks.length - 1][this.chunks.length - 1].x + 1
+    let tempChunks = this.chunks.shift()
+    if (tempChunks == null) {
+      console.log("helloe")
+      return
+    }
+
+    let newChunks = []
+
+    for (let i = 0; i < this.mapSize; i++) {
+      let chunk = new Chunk( newX, tempChunks[i].y, this.chunkSize)
+      chunk.createChunk((x, y) => {
+        const perlinX = NOISE_OFFSET[0] + x / (this.chunkSize * NOISE_SCALE[0])
+        const perlinY = NOISE_OFFSET[1] + y / (this.chunkSize * NOISE_SCALE[1])
+
+        var z0: number = this.octave(perlinX, perlinY, 0)
+        var z1: number = this.octave(perlinX, perlinY, 1)
+        var z2: number = this.octave(perlinX, perlinY, 2)
+
+        var z: number = z0 + z1 + z2
+        return Math.max(0, Math.floor(z * INTENSITY + OFFSET))
+      })
+      newChunks.push(chunk)
+    }
+
+    this.chunks.push(newChunks)
+  }
+
   getChunk(wX: number, wY: number): Chunk {
     const i: number = wX + this.center
     const j: number = wY + this.center
@@ -79,23 +108,28 @@ export class MapGen {
   chunkFaces(i: number, j: number, x: number, y: number, z: number): Face[] {
     let faces: Face[] = []
     const chunk = this.chunks[i][j]
+    const b = chunk.blocks[x][y][z]
     const wX = chunk.x * this.chunkSize + x
     const wY = chunk.y * this.chunkSize + y
 
     if (i > 0 && x == 0 && this.isChunk(i - 1, j)) {
       let c2 = this.chunks[i - 1][j]
 
-      if (!c2.getBlock(wX - 1, wY, z)) {
+      if (c2.getBlock(wX - 1, wY, z) == null) {
         faces.push(
-          new Face([wX - 0.5, wY, z], [Deg2Rad(90), Deg2Rad(-90), 0], "stone")
+          new Face([wX - 0.5, wY, z], [Deg2Rad(90), Deg2Rad(-90), 0], b.type)
         )
       }
-    } else if ( i < this.mapSize - 1 && x == this.chunkSize - 1 && this.isChunk(i + 1, j)) {
+    } else if (
+      i < this.mapSize - 1 &&
+      x == this.chunkSize - 1 &&
+      this.isChunk(i + 1, j)
+    ) {
       let c2 = this.chunks[i + 1][j]
 
-      if (!c2.getBlock(wX + 1, wY, z)) {
+      if (c2.getBlock(wX + 1, wY, z) == null) {
         faces.push(
-          new Face([wX + 0.5, wY, z], [Deg2Rad(90), Deg2Rad(90), 0], "stone")
+          new Face([wX + 0.5, wY, z], [Deg2Rad(90), Deg2Rad(90), 0], b.type)
         )
       }
     }
@@ -103,20 +137,24 @@ export class MapGen {
     if (j > 0 && y == 0 && this.isChunk(i, j - 1)) {
       let c2 = this.chunks[i][j - 1]
 
-      if (!c2.getBlock(wX, wY - 1, z)) {
+      if (c2.getBlock(wX, wY - 1, z) == null) {
         faces.push(
-          new Face([wX, wY - 0.5, z], [Deg2Rad(90), Deg2Rad(0), 0], "stone")
+          new Face([wX, wY - 0.5, z], [Deg2Rad(90), Deg2Rad(0), 0], b.type)
         )
       }
-    } else if ( j < this.mapSize - 1 && y == this.chunkSize - 1 && this.isChunk(i, j + 1)) {
+    } else if (
+      j < this.mapSize - 1 &&
+      y == this.chunkSize - 1 &&
+      this.isChunk(i, j + 1)
+    ) {
       let c2 = this.chunks[i][j + 1]
 
-      if (!c2.getBlock(wX, wY + 1, z)) {
+      if (c2.getBlock(wX, wY + 1, z) == null) {
         faces.push(
           new Face(
             [wX, wY + 0.5, z],
             [Deg2Rad(-90), Deg2Rad(0), Deg2Rad(180)],
-            "stone"
+            b.type
           )
         )
       }

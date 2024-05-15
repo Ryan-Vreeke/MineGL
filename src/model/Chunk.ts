@@ -40,20 +40,13 @@ export class Chunk {
     }
   }
 
-  getBlock(x: number, y: number, z: number): boolean {
+  getBlock(x: number, y: number, z: number): Block|null {
     let cx = x - this.size * this.x
     let cy = y - this.size * this.y
 
-    try {
-      if (this.blocks[cx][cy][z] == null) {
-        return false
-      }
-    } catch (error) {
-      console.log(cx + ": " + cy)
-    }
-
-    return true
+    return this.blocks[cx][cy][z]
   }
+
   blockAbove(x: number, y: number, z: number): boolean {
     return this.blocks[x][y][z + 1] == null
   }

@@ -205,12 +205,12 @@ export class Renderer {
     await this.material.initialize(this.device, "dist/textures/terrain.png")
 
     const modelBufferDescriptor: GPUBufferDescriptor = {
-      size: 64 * this.objCount * 10,
+      size: 64 * this.objCount,
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     }
 
     const textureBufferDescriptor: GPUBufferDescriptor = {
-      size: 8 * this.objCount * 10,
+      size: 8 * this.objCount,
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     }
     this.objectBuffer = this.device.createBuffer(modelBufferDescriptor)

@@ -3,7 +3,7 @@ import { Scene } from "../model/scene"
 import { Physics } from "../model/Physics"
 
 const chunkSize: number = 16
-const chunkCount: number = 10
+const chunkCount: number = 11
 
 export class App {
   canvas: HTMLCanvasElement
